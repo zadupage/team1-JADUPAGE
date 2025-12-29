@@ -1952,6 +1952,15 @@ server.use("/api", apiRouter);
 
 // 다른 모든 요청은 json-server의 기본 라우터가 처리
 server.use(router);
-server.listen(3000, () => {
-  console.log("Custom JSON Server with login route is running on port 3000");
-});
+
+// Vercel용 export
+module.exports = server;
+
+// 로컬 개발용 (직접 실행 시에만 listen)
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  server.listen(PORT, () => {
+    console.log(`JSON Server is running on port ${PORT}`);
+    console.log(`Swagger UI: http://localhost:${PORT}/api-docs`);
+  });
+}
