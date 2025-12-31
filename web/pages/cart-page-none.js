@@ -122,3 +122,39 @@ function createProductCard(item, index) {
     </button>
   `;
 }
+
+//체크박스 이벤트
+const checkbox = card.querySelector(".product-checkbox");
+checkbox.addEventListener("change", function () {
+  cartItems[index].checked = this.checked;
+  updateOrderSummary();
+});
+
+// 수량 감소
+const minusBtn = card.querySelector(".minus");
+minusBtn.addEventListener("click", function () {
+  if (cartItems[index].quantity > 1) {
+    cartItems[index].quantity--;
+    renderCart();
+  }
+});
+
+// 수량 증가
+
+const plusBtn = card.querySelector(".plus");
+plusBtn.addEventListener("click", function () {
+  cartItems[index].quantity++;
+  renderCart();
+});
+
+// 수량입력하기
+const qtyInput = card.querySelector(".qty-input");
+qtyInput.addEventListener("change", function () {
+  const newQty = parseInt(this.value);
+  if (newQty >= 1) {
+    cartItems[index].quantity = newQty;
+    renderCart();
+  } else {
+    this.value = cartItems[index].quantity;
+  }
+});
