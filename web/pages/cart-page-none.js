@@ -68,3 +68,57 @@ if (cartItems.length === 0) {
   //금액계산이랑 업데이트
   updateOrderSummary();
 }
+
+function createProductCard(item, index) {
+  const card = document.createElement("div");
+  card.className = "product-card";
+
+  card.innerHTML = `
+  <input type="checkbox"
+  class=product-checkbox"
+  id="product${item.id}"
+  ${item.checked ? "checked" : ""}
+  />
+  <label for="product${item.id}" class"checkbox-label"></label>
+  <div class="product-image">
+  <img src="${item.image}" alt="${item.name}" />
+  </div>
+  
+  <div class="product-info">
+  <p class="product-category">${item.category}</p>
+  <h3 class="product-name">${item.name}</h3>
+  <p class="product-price">${formatPrice(item.price)}원</p>
+  <p class="product-option">${item.option}</p>
+  </div>
+  <div class="product-quantity">
+      <button class="qty-btn minus" data-index="${index}">-</button>
+      <input type="number" class="qty-input" value="${
+        item.quantity
+      }" min="1" data-index="${index}" />
+      <button class="qty-btn plus" data-index="${index}">+</button>
+    </div>
+
+    <div class="product-price-total">
+      <p class="price-amount">${formatPrice(item.price * item.quantity)}원</p>
+    </div>
+
+    <button class="btn-order" data-index="${index}">주문하기</button>
+
+    <button class="btn-remove" data-index="${index}">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M15 5L5 15M5 5L15 15"
+          stroke="#999999"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      </svg>
+    </button>
+  `;
+}
