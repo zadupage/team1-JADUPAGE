@@ -23,7 +23,7 @@
 
                 <p class="price">17,500원</p>
 
-                <div class="delivery">
+                <div class="delivery"> 
                     <span>택배배송</span>
                     <span>/</span>
                     <span>무료배송</span>
@@ -31,7 +31,7 @@
 
                 <div class="quantify">
                     <button>-</button>
-                    <input type="number" value="1 " min="1" max="99">
+                    <input type="number" value="1" min="1" max="99">
                     <button>+</button>
                 </div>
 
@@ -58,6 +58,23 @@
             <button id="tab-return" class="tab">반품/교환정보</button>
             <div class="tab-contents">
           </section>
+    </div>
+    <div id="loginModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+
+      <div class="modal-content">
+        <button class="modal-close">✕</button>
+
+        <p class="modal-text">
+          로그인이 필요한 서비스입니다.<br>
+          로그인 하시겠습니까?
+        </p>
+
+        <div class="modal-actions">
+          <button id="modalNo" class="btn-cancel">아니오</button>
+          <button id="modalYes" class="btn-confirm">예</button>
+        </div>
+      </div>
     </div>
 </body>
 </html>
