@@ -1,33 +1,17 @@
-// 장바구니 데이터 (예시 데이터 - 실제로는 서버에서 가져오거나 localStorage에서 불러옴)
+// 장바구니 데이터
 let cartItems = [];
-// // ===== 테스트용: 장바구니에 상품 2개 보기 (주석 해제하면 상품 2개 표시됨) =====
 
-cartItems = [
-  {
-    id: 1,
-    name: "담려낼 개발자 무릎 담요",
-    category: "책/엔드/굿즈",
-    price: 17500,
-    image: "../assets/images/product3.png",
-    option: "택배배송 / 무료배송",
-    quantity: 1,
-    checked: true,
-  },
-  {
-    id: 2,
-    name: "Hack Your Life 개발자 노트북 파우치",
-    category: "주당당틀 라이즈의 삼실집",
-    price: 29000,
-    image: "../assets/images/product1.png",
-    option: "택배배송 / 무료배송",
-    quantity: 1,
-    checked: true,
-  },
-];
+// API 기본 URL 설정
+const API_BASE_URL = "http://localhost:3000/api";
 
-// // ===== 테스트 데이터 끝 =====
-// // 페이지 로드 시 실행
+// 로딩 상태 관리
+let isLoading = false;
+
+// 페이지 로드 시 실행
 document.addEventListener("DOMContentLoaded", function () {
+  // API에서 장바구니 데이터 가져오기
+  fetchCartItems();
+
   // 초기 렌더링
   renderCart();
 
@@ -35,23 +19,27 @@ document.addEventListener("DOMContentLoaded", function () {
   const searchInput = document.querySelector(".search-input");
   const searchBtn = document.querySelector(".search-btn");
 
-  searchBtn.addEventListener("click", function () {
-    const searchTerm = searchInput.value.trim();
-    if (searchTerm) {
-      console.log("검색어:", searchTerm);
-      // 검색 기능 구현
-    }
-  });
-
-  searchInput.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") {
+  if (searchBtn) {
+    searchBtn.addEventListener("click", function () {
       const searchTerm = searchInput.value.trim();
       if (searchTerm) {
         console.log("검색어:", searchTerm);
         // 검색 기능 구현
       }
-    }
-  });
+    });
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        const searchTerm = searchInput.value.trim();
+        if (searchTerm) {
+          console.log("검색어:", searchTerm);
+          // 검색 기능 구현
+        }
+      }
+    });
+  }
 
   // 장바구니 버튼
   const cartBtn = document.querySelector(".cart-btn");
@@ -69,6 +57,120 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+//  * fetch API를 사용하여 서버에서 데이터를 가져오기
+
+async function fetchCartItems() {
+  try {
+    // 로딩 상태 시작
+    isLoading = true;
+    showLoadingState();
+
+    // API 호출
+    const response = await fetch(`${API_BASE_URL}/cart/`);
+
+    // HTTP 에러 체크
+    if (!response.ok) {
+      throw new Error(
+        `HTTP error! status: ${response.status} - ${response.statusText}`
+      );
+    }
+
+    // JSON 데이터 파싱
+    const data = await response.json();
+
+    // 데이터가 있는 경우
+    if (data.results && Array.isArray(data.results)) {
+      // API 응답 데이터를 화면에 맞게 변환
+      cartItems = data.results.map((item) => ({
+        id: item.id,
+        name: item.product.name,
+        category: item.product.seller?.store_name || "일반상품",
+        price: item.product.price,
+        image: item.product.image,
+        option: `${
+          item.product.shipping_method === "PARCEL" ? "택배배송" : "직접배송"
+        } / ${item.product.shipping_fee === 0 ? "무료배송" : "유료배송"}`,
+        quantity: item.quantity,
+        checked: true,
+        productId: item.product.id,
+      }));
+
+      console.log(` 장바구니 데이터 로드 완료: ${cartItems.length}개 상품`);
+    } else {
+      cartItems = [];
+      console.log("ℹ 장바구니가 비어있습니다.");
+    }
+
+    // 로딩 완료 후 렌더링
+    renderCart();
+  } catch (error) {
+    // 예외 처리
+    console.error(" 장바구니 데이터를 불러오는 중 오류가 발생했습니다:", error);
+
+    // 사용자에게 에러 메시지 표시
+    showErrorMessage(
+      "장바구니 데이터를 불러올 수 없습니다. 잠시 후 다시 시도해주세요."
+    );
+
+    // 빈 장바구니 표시
+    cartItems = [];
+    renderCart();
+  } finally {
+    // 로딩 상태 종료
+    isLoading = false;
+    hideLoadingState();
+  }
+}
+
+/**
+ * 로딩 상태 표시
+ */
+function showLoadingState() {
+  const emptyCart = document.getElementById("emptyCart");
+  const cartContainer = document.getElementById("cartContainer");
+
+  if (emptyCart) {
+    emptyCart.innerHTML = `
+      <div class="loading-spinner">
+        <p class="empty-title">로딩 중...</p>
+        <p class="empty-subtitle">장바구니 데이터를 불러오고 있습니다.</p>
+      </div>
+    `;
+    emptyCart.style.display = "flex";
+  }
+
+  if (cartContainer) {
+    cartContainer.style.display = "none";
+  }
+}
+
+/**
+ * 로딩 상태 숨기기
+ */
+function hideLoadingState() {
+  // renderCart()에서 처리되므로 별도 처리 불필요
+}
+
+/**
+ * 에러 메시지 표시
+ */
+function showErrorMessage(message) {
+  const emptyCart = document.getElementById("emptyCart");
+
+  if (emptyCart) {
+    emptyCart.innerHTML = `
+      <p class="empty-title" style="color: #ff4444;"> 오류 발생</p>
+      <p class="empty-subtitle">${message}</p>
+      <button
+        onclick="location.reload()"
+        style="margin-top: 20px; padding: 10px 20px; cursor: pointer; background-color: #333; color: white; border: none; border-radius: 5px;">
+        새로고침
+      </button>
+    `;
+    emptyCart.style.display = "flex";
+  }
+}
 
 // 장바구니 렌더링
 function renderCart() {
