@@ -10,7 +10,7 @@ let price = 0;
 const minusBtn = document.querySelector('.quantify button:first-child');
 const plusBtn = document.querySelector('.quantify button:last-child');
 const quantityInput = document.querySelector('.quantify input');
-const modalText = document.querySelector('modal-text');
+const modalText = document.querySelector('.modal-text');
 const totalQuantityText = document.querySelector('.total-quantify');
 const totalPriceText = document.querySelector('.total-price');
 
