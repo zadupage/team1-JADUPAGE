@@ -31,7 +31,10 @@ const closeBtn = document.querySelector('.modal-close');
 function getAccessToken() {
   return localStorage.getItem('accessToken');
 }
-const isLogin = !!getAccessToken();
+
+function isLoggedIn() {
+  return !!getAccessToken();
+}
 
 // 수량/가격 계산
 function updateTotal() {
@@ -95,7 +98,7 @@ function openCartConfirmModal() {
 function requireLogin(callback) {
   return function (e) {
     e.preventDefault();
-    if (!isLogin) {
+    if (!isLoggedIn()) {
       openModal();
       return;
     }
@@ -141,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (buyBtn) {
     buyBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      if (!isLogin) {
+      if (!isLoggedIn()) {
         window.location.href = '/pages/login.html';
         return;
       }
