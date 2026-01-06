@@ -98,20 +98,37 @@ function openCartConfirmModal() {
 async function addToCart(productId, quantity) {
   const token = getAccessToken();
 
-  const res = await fetch('http://localhost:3000/cart', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({
-      product_id: productId,
-      quantity
-    })
-  });
+  if (!token) {
+    console.error("토큰이 없습니다!");
+    throw new Error("로그인이 필요합니다.");
+  }
 
-  if (!res.ok) throw new Error('장바구니 추가 실패');
-  return await res.json();
+  try {
+    const res = await fetch('http://localhost:3000/cart', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        product_id: productId,
+        quantity
+      })
+    });
+
+    console.log("fetch 요청 status:", res.status); // 디버깅용
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      console.error("서버 응답 오류:", errData);
+      throw new Error('장바구니 추가 실패');
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("addToCart 에러:", err);
+    throw err;
+  }
 }
 
 
@@ -179,13 +196,15 @@ if (cartBtn) {
     'click',
     requireLogin(async () => {
       try {
-        await addToCart(productId, quantity);
+        const data = await addToCart(productId, quantity);
+        console.log("장바구니 추가 성공:", data);
         openCartConfirmModal();
       } catch (e) {
         alert('장바구니 추가 실패');
-      }
-    })
-  );
+    }
+  })
+);
+
 }
 
   // 모달 버튼
