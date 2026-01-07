@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "http://localhost:3000/api";
 
 // -----------------------------
 // 유틸
@@ -15,166 +15,30 @@ function onlyDigits(el) {
 }
 
 function getAccessToken() {
+  // 프로젝트 전반에서 access_token을 쓰는 흐름이 많아서 우선순위로 잡음
   return (
     localStorage.getItem("access_token") || localStorage.getItem("token") || ""
   );
 }
 
-function authHeaders(extra = {}) {
-  const t = getAccessToken();
-  return {
-    ...extra,
-    ...(t ? { Authorization: `Bearer ${t}` } : {}),
-  };
-}
-
 async function fetchJSON(url, options = {}) {
   const res = await fetch(url, options);
   const data = await res.json().catch(() => ({}));
+
   if (!res.ok) {
-    const msg = data?.message || data?.error || data?.detail || "요청 실패";
+    const msg =
+      data?.detail ||
+      data?.message ||
+      data?.error ||
+      (typeof data === "string" ? data : "") ||
+      "요청 실패";
     throw new Error(msg);
   }
   return data;
 }
 
-function normalizeImagePath(img) {
-  if (!img) return "../../assets/images/product1.png";
-  if (typeof img === "string" && img.startsWith("./"))
-    return img.replace("./", "../../");
-  return img;
-}
-
-function safeParseJSON(raw) {
-  try {
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
-function getPaymentMethodValue() {
-  const checked = document.querySelector('input[name="pay"]:checked');
-  const v = checked?.value || "card";
-  const map = {
-    card: "card",
-    bank: "deposit",
-    mobile: "phone",
-    naver: "naverpay",
-    kakao: "kakaopay",
-  };
-  return map[v] || "card";
-}
-
-function toAbs(href) {
-  return new URL(href, window.location.href).toString();
-}
-
-/**
- * ✅ 헤더 아이콘 네비게이션
- * - layout.js가 장바구니 클릭 경로를 "../pages/cart/cart.html"로 걸어놔서
- *   order 페이지(/pages/order/...)에서는 /pages/pages/... 로 가며 404 발생
- * - 해결: order.js에서 캡처 단계로 먼저 클릭을 낚아채고(가장 먼저 실행)
- *   stopImmediatePropagation()으로 layout.js 핸들러 실행을 차단한 뒤
- *   올바른 경로로 이동
- */
-function wireHeaderNav() {
-  const bind = () => {
-    const header = document.querySelector("header");
-    if (!header) return false;
-
-    // ✅ layout.js가 쓰는 정확한 셀렉터 그대로 사용
-    const cartBtn = header.querySelector(' .icon-item[aria-label="장바구니"]');
-    const mypageBtn = header.querySelector(
-      ' .icon-item[aria-label="마이페이지"]'
-    );
-
-    // (선택) 자두 아이콘은 프로젝트마다 다를 수 있어 보험으로 넓게 잡기
-    const homeEl =
-      header.querySelector('img[alt*="자두"]') ||
-      header.querySelector('img[alt*="로고"]') ||
-      header.querySelector('img[src*="jadoo"]') ||
-      header.querySelector('img[src*="plum"]') ||
-      header.querySelector(".logo") ||
-      header.querySelector("#logo") ||
-      header.querySelector('a[href*="index"]');
-
-    // ✅ 홈(자두) → index.html
-    if (homeEl) {
-      const clickable = homeEl.closest("a, button, div, span") || homeEl;
-      clickable.style.cursor = "pointer";
-      if (!clickable.dataset.wiredHome) {
-        clickable.dataset.wiredHome = "1";
-        clickable.addEventListener(
-          "click",
-          (e) => {
-            e.preventDefault();
-            // order 페이지 기준 메인 이동 (너 프로젝트에서 이미 동작했음)
-            window.location.href = toAbs("../../index.html");
-          },
-          true
-        );
-      }
-    }
-
-    // ✅ 장바구니 → /pages/cart/cart.html 로 정확히 이동시키기
-    if (cartBtn) {
-      cartBtn.style.cursor = "pointer";
-      if (!cartBtn.dataset.wiredCartFix) {
-        cartBtn.dataset.wiredCartFix = "1";
-        cartBtn.addEventListener(
-          "click",
-          (e) => {
-            e.preventDefault();
-            e.stopImmediatePropagation(); // ✅ layout.js 핸들러 차단
-            // order(/pages/order/...) → cart(/pages/cart/...) 정답
-            window.location.href = toAbs("../cart/cart.html");
-          },
-          true // ✅ 캡처 단계(먼저 실행)
-        );
-      }
-    }
-
-    /**
-     * (옵션) 마이페이지도 layout.js가 /404.html로 보내는 코드가 있어서,
-     * order에서 눌렀을 때 이상하면 여기서도 고쳐줄 수 있음.
-     * 필요 없으면 이 블록은 그대로 둬도 됨.
-     */
-    if (mypageBtn) {
-      mypageBtn.style.cursor = "pointer";
-      if (!mypageBtn.dataset.wiredMypageFix) {
-        mypageBtn.dataset.wiredMypageFix = "1";
-        mypageBtn.addEventListener(
-          "click",
-          (e) => {
-            // layout.js의 /404.html 이동을 막고 싶으면 아래 두 줄 유지
-            // e.preventDefault();
-            // e.stopImmediatePropagation();
-            // 로그인 페이지 경로도 order 기준으로 맞춰줌(원하면 사용)
-            // if (!getAccessToken()) window.location.href = toAbs("../login/login.html");
-          },
-          true
-        );
-      }
-    }
-
-    return true;
-  };
-
-  // header 주입 타이밍 대비: 반복 + MutationObserver
-  let tries = 0;
-  const timer = setInterval(() => {
-    tries += 1;
-    const ok = bind();
-    if (ok || tries >= 30) clearInterval(timer);
-  }, 100);
-
-  const observer = new MutationObserver(() => {
-    const ok = bind();
-    if (ok) observer.disconnect();
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
+function getQuery() {
+  return new URLSearchParams(window.location.search);
 }
 
 // -----------------------------
@@ -201,6 +65,10 @@ const $addrExtra = document.getElementById("addrExtra");
 const $modal = document.getElementById("modal");
 const $modalClose = document.getElementById("modalClose");
 const $modalOk = document.getElementById("modalOk");
+// order.html에 id="modalTitle" 추가한 버전이면 이걸 쓰고,
+// 혹시 HTML을 절대 못 건드리는 상황이면 아래 fallback이 잡아줌
+const $modalTitle =
+  document.getElementById("modalTitle") || $modal.querySelector(".modal-title");
 
 // inputs
 const $buyerName = document.getElementById("buyerName");
@@ -216,24 +84,40 @@ const $recvPhone3 = document.getElementById("recvPhone3");
 const $shipMsg = document.getElementById("shipMsg");
 
 // -----------------------------
-// 모달
+// 모달 (같은 디자인 재활용 + OK 동작만 바꿀 수 있게)
 // -----------------------------
-function openModal() {
+let modalOkHandler = null;
+
+function openModal(message, onOk) {
+  if ($modalTitle) $modalTitle.textContent = message || "";
+  modalOkHandler = typeof onOk === "function" ? onOk : null;
+
   $modal.classList.remove("hidden");
   $modal.setAttribute("aria-hidden", "false");
 }
+
 function closeModal() {
   $modal.classList.add("hidden");
   $modal.setAttribute("aria-hidden", "true");
+  modalOkHandler = null;
 }
-$modalClose?.addEventListener("click", closeModal);
-$modalOk?.addEventListener("click", closeModal);
-$modal?.addEventListener("click", (e) => {
+
+$modalClose.addEventListener("click", closeModal);
+
+$modalOk.addEventListener("click", () => {
+  if (modalOkHandler) {
+    modalOkHandler();
+    return;
+  }
+  closeModal();
+});
+
+$modal.addEventListener("click", (e) => {
   if (e.target?.dataset?.close === "true") closeModal();
 });
 
 // -----------------------------
-// Daum postcode
+// Daum postcode (open 방식)
 // -----------------------------
 function openDaumPostcode() {
   if (!window.daum?.Postcode) {
@@ -262,124 +146,90 @@ function openDaumPostcode() {
       $postcode.value = data.zonecode || "";
       $addr1.value = addr || "";
       $addrExtra.value = extraAddr || "";
+
       $addr2.focus();
     },
   }).open();
 }
-$btnPostcode?.addEventListener("click", openDaumPostcode);
+
+$btnPostcode.addEventListener("click", openDaumPostcode);
 
 // -----------------------------
-// 주문 데이터 구성
+// 주문 데이터 로딩 (✅ product-details: query / ✅ cart: localStorage / ✅ 예전: sessionStorage)
 // -----------------------------
-async function buildOrderDataSmart() {
-  const params = new URLSearchParams(location.search);
-  const productId = params.get("id");
-  const quantity = Math.max(1, Number(params.get("quantity") || 1));
+let currentOrder = null; // { type: 'direct_order' | 'cart_order', items: [...] }
+let currentTotal = 0;
 
-  // ✅ 1) 바로구매: URL에 id가 있으면 무조건 이걸로
+function normalizeImagePath(img) {
+  if (!img) return "../../assets/images/product1.png";
+  // 서버에 ./ 로 저장된 이미지면 pages 기준 상대경로 보정
+  if (typeof img === "string" && img.startsWith("./")) {
+    return img.replace("./", "../../");
+  }
+  return img;
+}
+
+async function loadOrderData() {
+  // 1) product-details에서 바로구매: ../order/order.html?id=...&quantity=...
+  const qs = getQuery();
+  const productId = qs.get("id");
+  const quantity = Number(qs.get("quantity") || 1);
+
   if (productId) {
-    const p = await fetchJSON(`${API_BASE_URL}/api/products/${productId}`);
-    const orderData = {
+    const product = await fetchJSON(`${API_BASE_URL}/products/${productId}`);
+    return {
       type: "direct_order",
-      timestamp: new Date().toISOString(),
       items: [
         {
-          product_id: Number(productId),
-          quantity,
-          name: p.name,
-          brand: p?.seller?.store_name || "백엔드글로벌",
-          price: p.price,
-          image: normalizeImagePath(p.image),
+          product_id: product.id,
+          name: product.name,
+          brand: product.seller?.store_name || "백엔드글로벌",
+          price: product.price,
+          image: normalizeImagePath(product.image),
+          quantity: Math.max(1, quantity || 1),
         },
       ],
     };
-    sessionStorage.setItem("orderData", JSON.stringify(orderData));
-    return orderData;
   }
 
-  // ✅ 2) 장바구니: session/local 둘 다 있으면 "더 최신 timestamp" 선택
-  const session = safeParseJSON(sessionStorage.getItem("orderData"));
-  const local = safeParseJSON(localStorage.getItem("orderData"));
+  // 2) (이전 방식) sessionStorage.orderData
+  try {
+    const s = sessionStorage.getItem("orderData");
+    if (s) {
+      const parsed = JSON.parse(s);
 
-  const sessionHas = Array.isArray(session?.items) && session.items.length > 0;
-  const localHas = Array.isArray(local?.items) && local.items.length > 0;
+      // 이미 {type, items}면 그대로
+      if (parsed?.type && Array.isArray(parsed?.items)) return parsed;
+      // 혹시 items만 덩그러니 저장된 형태라면 감싸기
+      if (Array.isArray(parsed)) return { type: "cart_order", items: parsed };
+    }
+  } catch {}
 
-  if (sessionHas || localHas) {
-    const sTime = session?.timestamp
-      ? new Date(session.timestamp).getTime()
-      : 0;
-    const lTime = local?.timestamp ? new Date(local.timestamp).getTime() : 0;
+  // 3) cart.js 방식: localStorage.orderData = {items:[...], timestamp:...}
+  try {
+    const l = localStorage.getItem("orderData");
+    if (l) {
+      const parsed = JSON.parse(l);
+      if (Array.isArray(parsed?.items)) {
+        return { type: "cart_order", items: parsed.items };
+      }
+    }
+  } catch {}
 
-    const picked = localHas && lTime >= sTime ? local : session;
-
-    const normalized = {
-      type: picked.type || "cart_order",
-      timestamp: picked.timestamp || new Date().toISOString(),
-      items: picked.items,
-    };
-
-    sessionStorage.setItem("orderData", JSON.stringify(normalized));
-    return normalized;
-  }
-
-  // ✅ 3) fallback: 서버 장바구니에서 직접 구성
-  const token = getAccessToken();
-  if (!token)
-    return {
-      type: "cart_order",
-      timestamp: new Date().toISOString(),
-      items: [],
-    };
-
-  const cart = await fetchJSON(`${API_BASE_URL}/api/cart/`, {
-    headers: authHeaders(),
-  });
-
-  if (!Array.isArray(cart) || cart.length === 0) {
-    return {
-      type: "cart_order",
-      timestamp: new Date().toISOString(),
-      items: [],
-    };
-  }
-
-  const items = await Promise.all(
-    cart.map(async (c) => {
-      const p = await fetchJSON(`${API_BASE_URL}/api/products/${c.product_id}`);
-      return {
-        id: c.id, // ✅ cart_order에 필요
-        product_id: c.product_id,
-        quantity: c.quantity,
-        name: p.name,
-        brand: p?.seller?.store_name || "백엔드글로벌",
-        price: p.price,
-        image: normalizeImagePath(p.image),
-      };
-    })
-  );
-
-  const orderData = {
-    type: "cart_order",
-    timestamp: new Date().toISOString(),
-    items,
-  };
-  sessionStorage.setItem("orderData", JSON.stringify(orderData));
-  return orderData;
+  return { type: null, items: [] };
 }
 
 // -----------------------------
 // 렌더
 // -----------------------------
 function renderOrderItems(items = []) {
-  if (!$orderItems) return 0;
-
   $orderItems.innerHTML = "";
 
   if (!items.length) {
     $orderItems.innerHTML = `
       <div class="item" style="grid-template-columns: 1fr;">
         <div class="item-cell" style="text-align:left; padding:10px 0;">
-          주문 정보가 없습니다. 장바구니에서 다시 주문해주세요.
+          주문 정보가 없습니다. 다시 주문해주세요.
         </div>
       </div>
     `;
@@ -390,9 +240,10 @@ function renderOrderItems(items = []) {
 
   for (const it of items) {
     const name = it.name || it.product_name || "상품";
-    const brand = it.brand || it.category || "백엔드글로벌";
+    const brand = it.brand || it.category || it.seller || "백엔드글로벌";
     const qty = Number(it.quantity || 1);
     const price = Number(it.price || it.product_price || 0);
+
     const thumb = normalizeImagePath(it.image || it.thumbnail || it.image_url);
 
     const rowPrice = price * qty;
@@ -420,158 +271,195 @@ function renderOrderItems(items = []) {
 }
 
 function updateSummary(total) {
-  if ($totalPriceText) $totalPriceText.textContent = formatWon(total);
-  if ($sumProduct) $sumProduct.textContent = formatWon(total);
-  if ($sumDiscount) $sumDiscount.textContent = formatWon(0);
-  if ($sumShip) $sumShip.textContent = formatWon(0);
-  if ($sumPay) $sumPay.textContent = formatWon(total);
+  $totalPriceText.textContent = formatWon(total);
+
+  $sumProduct.textContent = formatWon(total);
+  $sumDiscount.textContent = formatWon(0);
+  $sumShip.textContent = formatWon(0);
+  $sumPay.textContent = formatWon(total);
 }
 
-function isShippingValid() {
-  const buyerName = $buyerName?.value.trim();
+// -----------------------------
+// 결제(주문 생성 API 호출) - 서버(server.js) 스펙에 맞춤
+// -----------------------------
+function isFormValid() {
+  const buyerName = $buyerName.value.trim();
   const buyerPhone = (
-    ($buyerPhone1?.value || "") +
-    ($buyerPhone2?.value || "") +
-    ($buyerPhone3?.value || "")
+    $buyerPhone1.value +
+    $buyerPhone2.value +
+    $buyerPhone3.value
   ).trim();
-  const buyerEmail = $buyerEmail?.value.trim();
+  const buyerEmail = $buyerEmail.value.trim();
 
-  const recvName = $recvName?.value.trim();
+  const recvName = $recvName.value.trim();
   const recvPhone = (
-    ($recvPhone1?.value || "") +
-    ($recvPhone2?.value || "") +
-    ($recvPhone3?.value || "")
+    $recvPhone1.value +
+    $recvPhone2.value +
+    $recvPhone3.value
   ).trim();
 
-  const postcode = $postcode?.value.trim();
-  const addr1 = $addr1?.value.trim();
-  const addr2 = $addr2?.value.trim();
+  const postcode = $postcode.value.trim();
+  const addr1 = $addr1.value.trim();
+  const addr2 = $addr2.value.trim();
 
-  if (!buyerName) return false;
-  if (buyerPhone.length < 10) return false;
-  if (!buyerEmail) return false;
+  if (!buyerName)
+    return { ok: false, msg: "배송정보를 빠짐없이 입력해주세요." };
+  if (buyerPhone.length < 10)
+    return { ok: false, msg: "배송정보를 빠짐없이 입력해주세요." };
+  if (!buyerEmail)
+    return { ok: false, msg: "배송정보를 빠짐없이 입력해주세요." };
 
-  if (!recvName) return false;
-  if (recvPhone.length < 10) return false;
+  if (!recvName) return { ok: false, msg: "배송정보를 빠짐없이 입력해주세요." };
+  if (recvPhone.length < 10)
+    return { ok: false, msg: "배송정보를 빠짐없이 입력해주세요." };
 
-  if (!postcode || !addr1 || !addr2) return false;
+  if (!postcode || !addr1 || !addr2)
+    return { ok: false, msg: "배송정보를 빠짐없이 입력해주세요." };
 
-  return true;
+  if (!$agree.checked) {
+    return { ok: false, msg: "주문 내용 확인 및 동의 체크를 해주세요." };
+  }
+
+  return { ok: true, msg: "" };
 }
 
-function calcTotalPriceFromItems(items = []) {
-  return items.reduce((sum, it) => {
-    const qty = Number(it.quantity || 1);
-    const price = Number(it.price || it.product_price || 0);
-    return sum + price * qty;
-  }, 0);
+function mapPaymentValue(v) {
+  // order.html radio 값 -> server.js 허용 값
+  switch (v) {
+    case "card":
+      return "card";
+    case "bank":
+      return "deposit";
+    case "mobile":
+      return "phone";
+    case "naver":
+      return "naverpay";
+    case "kakao":
+      return "kakaopay";
+    default:
+      return "card";
+  }
 }
 
-// -----------------------------
-// 주문 생성
-// -----------------------------
-async function createOrderByType(orderData) {
+function getSelectedPayment() {
+  const checked = document.querySelector('input[name="pay"]:checked');
+  return mapPaymentValue(checked?.value || "card");
+}
+
+function buildReceiverPhone() {
+  return `${$recvPhone1.value}-${$recvPhone2.value}-${$recvPhone3.value}`;
+}
+
+function buildFullAddress() {
+  const a1 = $addr1.value.trim();
+  const extra = $addrExtra.value.trim();
+  const a2 = $addr2.value.trim();
+  return [a1, extra, a2].filter(Boolean).join(" ");
+}
+
+async function createOrder(order) {
   const token = getAccessToken();
   if (!token) throw new Error("로그인이 필요합니다.");
 
-  const type = orderData?.type;
-  const items = orderData?.items || [];
-  const total_price = calcTotalPriceFromItems(items);
+  const orderType = order?.type; // direct_order | cart_order
+  const items = order?.items || [];
+  if (!items.length) throw new Error("주문 상품 정보가 없습니다.");
 
-  const receiver = $recvName.value.trim();
-  const receiver_phone_number = `${$recvPhone1.value}-${$recvPhone2.value}-${$recvPhone3.value}`;
-  const address = `${$addr1.value.trim()} ${$addr2.value.trim()}`.trim();
-  const address_message = $shipMsg.value.trim();
-  const payment_method = getPaymentMethodValue();
+  const bodyCommon = {
+    total_price: currentTotal, // 서버 검증이 이 값과 맞아야 통과
+    receiver: $recvName.value.trim(),
+    receiver_phone_number: buildReceiverPhone(),
+    address: buildFullAddress(),
+    address_message: $shipMsg.value.trim(),
+    payment_method: getSelectedPayment(),
+  };
 
-  if (type === "direct_order") {
+  // ✅ direct_order
+  if (orderType === "direct_order") {
     const first = items[0] || {};
-    const product_id = first.product_id ?? first.id;
+    const product_id = first.product_id ?? first.productId ?? first.id;
     const quantity = Number(first.quantity || 1);
     if (!product_id) throw new Error("직접구매 상품 정보가 없습니다.");
 
-    return fetchJSON(`${API_BASE_URL}/api/order/`, {
+    return fetchJSON(`${API_BASE_URL}/order/`, {
       method: "POST",
-      headers: authHeaders({ "Content-Type": "application/json" }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({
         order_type: "direct_order",
-        product_id: Number(product_id),
+        product_id,
         quantity,
-        total_price,
-        receiver,
-        receiver_phone_number,
-        address,
-        address_message,
-        payment_method,
+        ...bodyCommon,
       }),
     });
   }
 
-  if (type === "cart_order" || type === "cart") {
-    const cart_items = items
-      .map((it) => Number(it.id ?? it.cartItemId ?? it.cart_item_id))
-      .filter((n) => Number.isFinite(n));
+  // ✅ cart_order
+  if (orderType === "cart_order") {
+    // server.js는 cart_items: [{ product_id }] 형태로 조회/검증 후
+    // 해당 product_id들을 cart에서 제거함
+    const cart_items = items.map((it) => ({
+      product_id: it.product_id ?? it.productId ?? it.id,
+    }));
 
-    if (!cart_items.length)
-      throw new Error("장바구니 주문 아이템(id)이 없습니다.");
+    if (!cart_items.length || !cart_items[0].product_id) {
+      throw new Error("장바구니 주문 상품 정보가 올바르지 않습니다.");
+    }
 
-    return fetchJSON(`${API_BASE_URL}/api/order/`, {
+    return fetchJSON(`${API_BASE_URL}/order/`, {
       method: "POST",
-      headers: authHeaders({ "Content-Type": "application/json" }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({
         order_type: "cart_order",
         cart_items,
-        total_price,
-        receiver,
-        receiver_phone_number,
-        address,
-        address_message,
-        payment_method,
+        ...bodyCommon,
       }),
     });
   }
 
-  throw new Error("orderData.type이 올바르지 않습니다.");
+  throw new Error("주문 타입을 확인할 수 없습니다.");
 }
 
-async function clearCartAlways() {
-  const token = getAccessToken();
-  if (!token) return;
-
-  await fetch(`${API_BASE_URL}/api/cart/`, {
-    method: "DELETE",
-    headers: authHeaders(),
-  }).catch(() => {});
-}
-
-function cleanupOrderData() {
+function cleanupAfterSuccess(orderType) {
+  // 주문 정보는 정리 (메인 상품 데이터는 절대 안 건드림)
   sessionStorage.removeItem("orderData");
   localStorage.removeItem("orderData");
+
+  // 장바구니 주문이면, 서버에서 cart_order 처리 시 cart에서 제거됨
+  // + 혹시 UI 캐시로 sessionStorage cartData 등을 쓰는 프로젝트도 있어서 안전 정리
+  if (orderType === "cart_order") {
+    sessionStorage.removeItem("cartData");
+  }
 }
 
 // -----------------------------
 // 결제 버튼
 // -----------------------------
-$payBtn?.addEventListener("click", async () => {
-  if (!isShippingValid()) {
-    openModal();
+$payBtn.addEventListener("click", async () => {
+  const v = isFormValid();
+  if (!v.ok) {
+    openModal(v.msg); // 기존 모달 디자인 그대로
     return;
   }
 
-  // 동의 강제하고 싶으면 주석 해제
-  // if (!$agree?.checked) { alert("동의가 필요합니다."); return; }
-
-  const orderData = safeParseJSON(sessionStorage.getItem("orderData"));
-  if (!orderData?.items?.length) {
-    alert("주문 정보가 없습니다. 장바구니에서 다시 주문해주세요.");
+  if (!currentOrder || !currentOrder.items?.length) {
+    openModal("주문 정보가 없습니다. 다시 주문해주세요.");
     return;
   }
 
   try {
-    await createOrderByType(orderData);
-    await clearCartAlways();
-    cleanupOrderData();
-    window.location.href = toAbs("../../index.html");
+    await createOrder(currentOrder);
+
+    // ✅ 결제 완료 모달 (같은 위치/같은 디자인)
+    openModal("결제가 완료되었습니다.", () => {
+      cleanupAfterSuccess(currentOrder.type);
+      window.location.href = "../../index.html";
+    });
   } catch (err) {
     alert(err?.message || "결제 처리 중 오류가 발생했습니다.");
   }
@@ -581,9 +469,7 @@ $payBtn?.addEventListener("click", async () => {
 // 초기화
 // -----------------------------
 (async function init() {
-  // ✅ 헤더 아이콘 네비게이션(장바구니 404 수정 포함)
-  wireHeaderNav();
-
+  // 숫자만 입력
   [
     $buyerPhone1,
     $buyerPhone2,
@@ -591,14 +477,19 @@ $payBtn?.addEventListener("click", async () => {
     $recvPhone1,
     $recvPhone2,
     $recvPhone3,
-  ]
-    .filter(Boolean)
-    .forEach(onlyDigits);
+  ].forEach(onlyDigits);
 
   closeModal();
 
-  const orderData = await buildOrderDataSmart();
-  const items = orderData?.items || [];
-  const total = renderOrderItems(items);
-  updateSummary(total);
+  currentOrder = await loadOrderData();
+  const items = currentOrder?.items || [];
+
+  currentTotal = renderOrderItems(items);
+  updateSummary(currentTotal);
+
+  // 주문 타입이 null이면(=주문정보 없음) 사용자에게도 바로 보이게
+  if (!currentOrder?.type || !items.length) {
+    // 렌더에 이미 문구가 나오긴 하지만, 결제 클릭 전에도 알림 느낌 주고 싶으면 모달 띄워도 됨
+    // openModal("주문 정보가 없습니다. 다시 주문해주세요.");
+  }
 })();
