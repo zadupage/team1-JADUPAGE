@@ -67,171 +67,102 @@ function getPaymentMethodValue() {
   return map[v] || "card";
 }
 
-/**
- * ✅ 여러 후보 경로 중 "진짜 페이지"로 보이는 곳으로 이동
- * - 서버가 없는 페이지도 200으로 주고 404 UI를 띄우는 경우를 대비해서
- *   HTML 내용에 404/Not Found 흔적이 있으면 실패로 판단하고 다음 후보로 넘어감
- */
-async function goToFirstValidPath(paths, fallbackPath) {
-  for (const p of paths) {
-    try {
-      const url = new URL(p, window.location.origin).toString();
-      const res = await fetch(url, { method: "GET", cache: "no-store" });
-      if (!res.ok) continue;
-
-      const text = (await res.text()).slice(0, 3000).toLowerCase();
-
-      const looks404 =
-        text.includes("<title>404") ||
-        (text.includes("404") && text.includes("not found")) ||
-        text.includes("페이지를 찾을 수") ||
-        text.includes("cannot get") ||
-        text.includes("not found") ||
-        text.includes("page not found");
-
-      if (looks404) continue;
-
-      window.location.href = url;
-      return;
-    } catch {
-      // 다음 후보
-    }
-  }
-
-  window.location.href = new URL(
-    fallbackPath,
-    window.location.origin
-  ).toString();
+function toAbs(href) {
+  return new URL(href, window.location.href).toString();
 }
 
 /**
- * ✅ 헤더 아이콘 네비게이션(자두=홈, 장바구니=카트)
- * - layout.js가 header를 동적으로 주입하므로 주입 후 바인딩
- * - 가장 정확한 방법: 헤더 안의 a[href]가 있으면 그 경로 그대로 따라가기
- * - a[href]가 없으면 후보 경로로 탐색
+ * ✅ 헤더 아이콘 네비게이션
+ * - layout.js가 장바구니 클릭 경로를 "../pages/cart/cart.html"로 걸어놔서
+ *   order 페이지(/pages/order/...)에서는 /pages/pages/... 로 가며 404 발생
+ * - 해결: order.js에서 캡처 단계로 먼저 클릭을 낚아채고(가장 먼저 실행)
+ *   stopImmediatePropagation()으로 layout.js 핸들러 실행을 차단한 뒤
+ *   올바른 경로로 이동
  */
 function wireHeaderNav() {
-  const HOME_FALLBACK = "/index.html";
-
-  // ✅ 현재 페이지 경로를 보고 cart 경로 후보를 앞쪽에 더 정확히 배치
-  const path = window.location.pathname; // 예: /pages/order/order.html
-  const preferPages = path.includes("/pages/");
-
-  const HOME_CANDIDATES = ["/index.html", "/pages/index.html"];
-
-  const CART_CANDIDATES = preferPages
-    ? [
-        "/pages/cart/cart.html",
-        "/pages/cart.html",
-        "/cart/cart.html",
-        "/cart.html",
-        "/cart",
-      ]
-    : [
-        "/cart/cart.html",
-        "/cart.html",
-        "/pages/cart/cart.html",
-        "/pages/cart.html",
-        "/cart",
-      ];
-
   const bind = () => {
     const header = document.querySelector("header");
     if (!header) return false;
 
-    // ---- 홈(자두) ----
-    const homeSelectors = [
-      'img[alt*="자두"]',
-      'img[alt*="로고"]',
-      'img[src*="jadoo"]',
-      'img[src*="plum"]',
-      ".logo",
-      ".headerLogo",
-      "#logo",
-      "#headerLogo",
-      'a[href*="index"]',
-    ];
+    // ✅ layout.js가 쓰는 정확한 셀렉터 그대로 사용
+    const cartBtn = header.querySelector(' .icon-item[aria-label="장바구니"]');
+    const mypageBtn = header.querySelector(
+      ' .icon-item[aria-label="마이페이지"]'
+    );
 
-    let homeEl = null;
-    for (const sel of homeSelectors) {
-      homeEl = header.querySelector(sel);
-      if (homeEl) break;
-    }
+    // (선택) 자두 아이콘은 프로젝트마다 다를 수 있어 보험으로 넓게 잡기
+    const homeEl =
+      header.querySelector('img[alt*="자두"]') ||
+      header.querySelector('img[alt*="로고"]') ||
+      header.querySelector('img[src*="jadoo"]') ||
+      header.querySelector('img[src*="plum"]') ||
+      header.querySelector(".logo") ||
+      header.querySelector("#logo") ||
+      header.querySelector('a[href*="index"]');
 
+    // ✅ 홈(자두) → index.html
     if (homeEl) {
       const clickable = homeEl.closest("a, button, div, span") || homeEl;
       clickable.style.cursor = "pointer";
-
       if (!clickable.dataset.wiredHome) {
         clickable.dataset.wiredHome = "1";
-        clickable.addEventListener("click", async (e) => {
-          e.preventDefault();
-
-          // ✅ 헤더 내부에 a[href]가 있으면 그걸 그대로 사용 (정답률 최고)
-          const a = clickable.closest("a");
-          const href = a?.getAttribute("href");
-          if (href && href !== "#") {
-            window.location.href = new URL(
-              href,
-              window.location.origin
-            ).toString();
-            return;
-          }
-
-          await goToFirstValidPath(HOME_CANDIDATES, HOME_FALLBACK);
-        });
+        clickable.addEventListener(
+          "click",
+          (e) => {
+            e.preventDefault();
+            // order 페이지 기준 메인 이동 (너 프로젝트에서 이미 동작했음)
+            window.location.href = toAbs("../../index.html");
+          },
+          true
+        );
       }
     }
 
-    // ---- 장바구니 ----
-    const cartSelectors = [
-      'img[alt*="장바구니"]',
-      'img[src*="cart"]',
-      ".cart",
-      ".cartIcon",
-      ".headerCart",
-      "#cart",
-      "#cartIcon",
-      "#headerCart",
-      'a[href*="cart"]',
-    ];
-
-    let cartEl = null;
-    for (const sel of cartSelectors) {
-      cartEl = header.querySelector(sel);
-      if (cartEl) break;
-    }
-
-    if (cartEl) {
-      const clickable = cartEl.closest("a, button, div, span") || cartEl;
-      clickable.style.cursor = "pointer";
-
-      if (!clickable.dataset.wiredCart) {
-        clickable.dataset.wiredCart = "1";
-        clickable.addEventListener("click", async (e) => {
-          e.preventDefault();
-
-          // ✅ 가장 확실: 헤더에서 제공하는 cart 링크(a[href])가 있으면 그걸 우선 사용
-          const a = clickable.closest("a");
-          const href = a?.getAttribute("href");
-          if (href && href !== "#") {
-            window.location.href = new URL(
-              href,
-              window.location.origin
-            ).toString();
-            return;
-          }
-
-          // ✅ 없으면 후보 경로 탐색
-          await goToFirstValidPath(CART_CANDIDATES, "/pages/cart/cart.html");
-        });
+    // ✅ 장바구니 → /pages/cart/cart.html 로 정확히 이동시키기
+    if (cartBtn) {
+      cartBtn.style.cursor = "pointer";
+      if (!cartBtn.dataset.wiredCartFix) {
+        cartBtn.dataset.wiredCartFix = "1";
+        cartBtn.addEventListener(
+          "click",
+          (e) => {
+            e.preventDefault();
+            e.stopImmediatePropagation(); // ✅ layout.js 핸들러 차단
+            // order(/pages/order/...) → cart(/pages/cart/...) 정답
+            window.location.href = toAbs("../cart/cart.html");
+          },
+          true // ✅ 캡처 단계(먼저 실행)
+        );
       }
     }
 
-    return Boolean(homeEl || cartEl);
+    /**
+     * (옵션) 마이페이지도 layout.js가 /404.html로 보내는 코드가 있어서,
+     * order에서 눌렀을 때 이상하면 여기서도 고쳐줄 수 있음.
+     * 필요 없으면 이 블록은 그대로 둬도 됨.
+     */
+    if (mypageBtn) {
+      mypageBtn.style.cursor = "pointer";
+      if (!mypageBtn.dataset.wiredMypageFix) {
+        mypageBtn.dataset.wiredMypageFix = "1";
+        mypageBtn.addEventListener(
+          "click",
+          (e) => {
+            // layout.js의 /404.html 이동을 막고 싶으면 아래 두 줄 유지
+            // e.preventDefault();
+            // e.stopImmediatePropagation();
+            // 로그인 페이지 경로도 order 기준으로 맞춰줌(원하면 사용)
+            // if (!getAccessToken()) window.location.href = toAbs("../login/login.html");
+          },
+          true
+        );
+      }
+    }
+
+    return true;
   };
 
-  // header 주입 타이밍 대비: 반복 + MutationObserver 보험
+  // header 주입 타이밍 대비: 반복 + MutationObserver
   let tries = 0;
   const timer = setInterval(() => {
     tries += 1;
@@ -640,7 +571,7 @@ $payBtn?.addEventListener("click", async () => {
     await createOrderByType(orderData);
     await clearCartAlways();
     cleanupOrderData();
-    window.location.href = "../../index.html";
+    window.location.href = toAbs("../../index.html");
   } catch (err) {
     alert(err?.message || "결제 처리 중 오류가 발생했습니다.");
   }
@@ -650,7 +581,7 @@ $payBtn?.addEventListener("click", async () => {
 // 초기화
 // -----------------------------
 (async function init() {
-  // ✅ 헤더 아이콘 네비게이션: 자두=홈 / 장바구니=카트
+  // ✅ 헤더 아이콘 네비게이션(장바구니 404 수정 포함)
   wireHeaderNav();
 
   [
