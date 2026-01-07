@@ -14,6 +14,18 @@ body {
   line-height: 1.6;
 }
 
+/* 헤더 높이 조정 */
+.header {
+  height: 90.88px !important;
+  min-height: 90.88px !important;
+}
+
+.header-inner {
+  height: 100% !important;
+  min-height: 90.88px !important;
+  padding: 1rem 0 !important;
+}
+
 /* 컨테이너 */
 .container {
   max-width: 75rem;
