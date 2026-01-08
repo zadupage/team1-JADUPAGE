@@ -1,8 +1,9 @@
-# 자두마켓 (ZaduMarket)
+# 자두페이지 (ZADU PAGE)
 
 ## 프로젝트 개요
 
-이 문서는 '새싹코딩팀'이 진행한 바닐라 JS 기반 오픈마켓 서비스 프로젝트의 목표, 기능, 아키텍처, 팀원 역할 및 협업 과정을 상세히 기술한 문서입니다.
+'새싹코딩팀'이 진행한 Vanilla JavaScript 기반 오픈마켓 서비스 프로젝트입니다.
+프레임워크 없이 순수 JavaScript만으로 MPA(Multi-Page Application)를 구현하며, 모듈화 아키텍처와 Git-flow 협업 전략을 실천했습니다.
 
 ### 1. 목표와 기능
 
@@ -14,21 +15,19 @@
 - **협업 목표**: Git-flow 전략에 기반한 버전 관리, Pull Request를 통한 코드 리뷰, 정기적인 소통을 통해 실전적인 팀 협업 프로세스를 경험하고 함께 성장합니다.
 - **설계 목표**: 향후 유지보수와 기능 확장을 고려하여, 기능별로 책임이 명확히 분리된 모듈화 아키텍처를 설계하고 구현합니다.
 
-#### 1.2. 기능
+#### 1.2. 핵심 기능
 
-본 프로젝트에서 구현된 핵심 기능은 다음과 같습니다.
-
-| 구분          | 주요 기능       | 상세 설명                                                                                |
-| :------------ | :-------------- | :--------------------------------------------------------------------------------------- |
-| **회원 인증** | 로그인/로그아웃 | JWT 토큰 기반의 인증을 처리하며, 로그인 성공 시 이전 페이지로 리다이렉트됩니다.          |
-|               | 회원가입        | 아이디 중복 확인 API 연동 및 모든 입력값에 대한 유효성 검사를 수행합니다.                |
-| **상품**      | 상품 목록 조회  | 메인 페이지에서 전체 상품 목록을 비동기적으로 불러와 동적 렌더링합니다.                  |
-|               | 상품 상세 조회  | 상품 ID를 기반으로 특정 상품의 상세 정보를 불러와 렌더링합니다.                          |
-|               | 상품 검색       |                                                                                          |
-| **장바구니**  | 장바구니 관리   | 상품 추가, 삭제, 수량 변경이 가능하며, 모든 변경사항은 실시간으로 반영됩니다.            |
-|               | 금액 계산       | 상품 선택 여부와 수량에 따라 총 상품금액, 할인, 배송비를 실시간으로 계산하여 표시합니다. |
-| **주문/결제** | 주문서 생성     | 장바구니의 상품 정보를 바탕으로 수정 불가능한 주문서를 생성합니다.                       |
-|               | 결제 프로세스   | 배송 정보 등 모든 필수 입력이 완료되어야 결제 버튼이 활성화됩니다.                       |
+| 구분          | 주요 기능       | 상세 설명                                              |
+| :------------ | :-------------- | :----------------------------------------------------- |
+| **회원 인증** | 로그인/로그아웃 | JWT 토큰 기반 인증, 자동 로그아웃 기능                 |
+|               | 회원가입        | 아이디 중복 확인, 입력값 유효성 검사                   |
+| **상품**      | 상품 목록 조회  | 비동기 데이터 로딩, 캐러셀, 탭 UI, 페이지네이션        |
+|               | 상품 검색       | 검색어 기반 상품 필터링 (json-server의 name_like 활용) |
+|               | 상품 상세 조회  | 상품 ID 기반 상세 정보, 수량 선택, 장바구니 담기       |
+| **장바구니**  | 장바구니 관리   | 상품 추가/삭제/수량 변경, 모달 UI                      |
+|               | 금액 계산       | 실시간 총 금액 계산 (상품 금액 + 배송비)               |
+| **주문/결제** | 주문서 생성     | 장바구니 선택 상품 기반 주문서 생성                    |
+|               | 결제 프로세스   | 배송 정보 입력, 결제 수단 선택                         |
 
 #### 1.3. 팀 구성
 
@@ -56,17 +55,13 @@
 
 #### 2.2. 실행 방법
 
-##### 배포된 사이트 접속
+##### 🌐 배포된 사이트 접속
 
-배포된 웹사이트에 바로 접속하여 사용할 수 있습니다.
+<!-- 🔗 **배포 URL**: [https://zadupage.github.io/team1-JADUPAGE/](https://zadupage.github.io/team1-JADUPAGE/) -->
 
-<!-- 🔗 **배포 URL**: [https://zadupage.github.io/team1-JADUPAGE/](https://zadupage.github.io/team1-JADUPAGE/) 발표전에 링크수정및 주석해제 -->
-
-> 배포 버전은 GitHub Pages를 통해 호스팅되며, 별도의 설치 없이 브라우저에서 바로 사용 가능합니다.
+> 배포 예정
 
 ##### 로컬 개발 환경 실행
-
-개발자가 프로젝트를 수정하거나 로컬에서 실행하려면 다음 단계를 따르세요:
 
 **1. 프로젝트 클론**
 
@@ -87,23 +82,20 @@ npm run server
 **3. 프론트엔드 실행**
 
 - VS Code의 `Live Server` 확장 프로그램을 설치합니다.
-- `web/index.html` 또는 `Main.html` 파일에서 `Live Server`를 실행합니다.
+- `index.html` 파일을 우클릭하여 `Open with Live Server`를 실행합니다.
+- 브라우저에서 자동으로 메인 페이지가 열립니다.
 
 ---
 
 ### 3. 요구사항 명세와 기능 명세
 
-#### 3.1. 개발 철학
+#### 3.1. 핵심 아키텍처
 
-프로젝트의 주요 과제는 프레임워크 없이, 다양한 역량을 가진 팀원들이 일관성 있는 코드를 작성할 수 있는 환경을 구축하는 것이었습니다. 이를 위해 저희는 **'기능의 모듈화'** 와 **'직관적인 인터페이스 제공'** 이라는 두 가지 원칙을 세웠습니다.
+##### API 통신 계층 ([web/scripts/api.js](web/scripts/api.js))
 
-#### 3.2. 핵심 아키텍처
+프로젝트의 모든 HTTP 요청을 중앙에서 관리하는 API 통신 계층입니다.
 
-##### API 통신 계층 (api.js)
-
-`api.js`는 프로젝트의 모든 서버 HTTP 요청을 중앙에서 관리하는 API 통신 계층입니다. 이 모듈의 핵심 목표는 통신의 복잡성을 추상화하여, 다른 파일들이 비즈니스 로직에만 집중할 수 있도록 합니다.
-
-`fetchAPI(url, options)` 이 함수는 모든 fetch 요청이 거쳐가는 단일 관문(Gateway) 역할을 수행합니다.
+**핵심 함수: `fetchAPI(url, options)`**
 
 ```javascript
 // api.js
@@ -135,15 +127,27 @@ async function fetchAPI(url, options = {}) {
 }
 ```
 
-**중앙화된 에러 처리**: 모든 API 요청에서 발생할 수 있는 에러(네트워크, HTTP 상태 코드 등)를 이 함수 한 곳에서 일관되게 처리합니다. 이를 통해 각 페이지의 비즈니스 로직에서 반복적인 try...catch 구문을 제거할 수 있습니다.
+**특징:**
 
-**표준화된 응답**: 204 No Content와 같은 특수한 성공 케이스를 처리하고, 에러 발생 시 일관된 구조의 에러 객체를 반환하여 호출부가 안정적으로 후속 처리를 할 수 있도록 돕습니다.
+- 중앙화된 에러 처리 (네트워크, HTTP 상태 코드)
+- 204 No Content 등 특수 케이스 처리
+- 일관된 에러 객체 구조
+
+**제공 API:**
+
+```javascript
+export const API = {
+  getProducts: async () => {...},           // 전체 상품 목록 조회
+  getProduct: async (productId) => {...},   // 상품 상세 조회
+  searchProducts: async (query) => {...}    // 상품 검색
+};
+```
 
 ---
 
-##### 인증 관리 계층 (layout.js)
+##### 인증 관리 계층 ([web/components/layout.js](web/components/layout.js))
 
-`layout.js`는 JWT(JSON Web Token) 기반 인증의 전체 생명주기를 관리합니다. 이 모듈의 가장 중요한 설계 목표는 토큰 만료 시 자동 로그아웃을 처리하여, 사용자 경험을 향상시키는 것입니다.
+JWT 기반 인증의 전체 생명주기를 관리하며, 토큰 만료 시 자동 로그아웃을 처리합니다.
 
 ```javascript
 // layout.js
@@ -178,24 +182,24 @@ function scheduleAutoLogout() {
 }
 ```
 
+**주요 기능:**
+
+- JWT 토큰 파싱 및 만료 확인
+- 자동 로그아웃 타이머 설정
+- 페이지 전환 시 인증 상태 유지
+
 ---
 
-##### 공통 레이아웃 모듈 (layout.html, layout.js)
+##### 공통 레이아웃 모듈 ([web/components/layout.html](web/components/layout.html))
 
-`layout.html`과 `layout.js`는 여러 페이지에서 반복적으로 사용되는 Header와 Footer를 컴포넌트화하여, 코드 중복을 방지하고 프로젝트 전체의 UI 일관성을 유지하는 역할을 합니다.
+Header와 Footer를 컴포넌트화하여 코드 중복을 방지하고 UI 일관성을 유지합니다.
 
-각 페이지는 동적으로 공통 레이아웃을 로드하여 사용합니다.
+**포함 요소:**
 
-```javascript
-// 사용 예시
-fetch("../../components/layout.html")
-  .then((res) => res.text())
-  .then((html) => {
-    document.getElementById("header").innerHTML = new DOMParser()
-      .parseFromString(html, "text/html")
-      .querySelector("header").outerHTML;
-  });
-```
+- 검색 기능 (json-server의 `name_like` 활용)
+- 장바구니 링크
+- 마이페이지 링크
+- 로그인/로그아웃 버튼
 
 ---
 
@@ -222,55 +226,60 @@ fetch("../../components/layout.html")
 #### 4.1. 프로젝트 구조
 
 ```text
-📂 zadumarket/
+📂 zadu/
 ├── 📂 web/
 │   ├── 📂 assets/
-│   │   ├── 📂 icons/              # 아이콘 파일
-│   │   └── 📂 images/             # 이미지 파일
+│   │   ├── 📂 icons/              # SVG 아이콘 스프라이트
+│   │   └── 📂 images/             # 상품 이미지, 로고
 │   ├── 📂 components/
 │   │   ├── 📜 layout.html         # 공통 헤더/푸터
-│   │   ├── 📜 layout.js           # 레이아웃 로직 및 인증
+│   │   ├── 📜 layout.js           # 레이아웃 로직 및 JWT 인증
 │   │   └── 📜 layout.css          # 레이아웃 스타일
 │   ├── 📂 pages/
 │   │   ├── 📂 cart/
 │   │   │   ├── 📜 cart.html       # 장바구니 페이지
-│   │   │   └── 📜 cart.js
+│   │   │   ├── 📜 cart.js         # 장바구니 로직 (모달, CRUD)
+│   │   │   └── 📜 CART_README.md  # 장바구니 기능 문서
+├────────────📂node_modules
+│   │   │
 │   │   ├── 📂 login/
 │   │   │   ├── 📜 login.html      # 로그인 페이지
-│   │   │   └── 📜 login.js
+│   │   │   └── 📜 login.js        # 로그인 로직
 │   │   ├── 📂 signup/
 │   │   │   ├── 📜 signup.html     # 회원가입 페이지
-│   │   │   └── 📜 signup.js
+│   │   │   └── 📜 signup.js       # 회원가입 로직
 │   │   ├── 📂 product-details/
 │   │   │   ├── 📜 product-details.html  # 상품 상세 페이지
-│   │   │   └── 📜 product-details.js
+│   │   │   └── 📜 product-details.js    # 상품 상세 로직
 │   │   └── 📂 order/
 │   │       ├── 📜 order.html      # 주문/결제 페이지
-│   │       └── 📜 order.js
+│   │       └── 📜 order.js        # 주문 로직
 │   ├── 📂 scripts/
-│   │   ├── 📜 api.js              # API 통신 계층
-│   │   └── 📜 main.js             # 메인 페이지 로직
+│   │   ├── 📜 api.js              # API 통신 계층 (fetchAPI)
+│   │   └── 📜 main.js             # 메인 페이지 로직 (캐러셀, 탭, 검색)
 │   ├── 📂 styles/
 │   │   ├── 📜 variables.css       # CSS 변수 정의
 │   │   ├── 📜 fonts.css           # 폰트 스타일
 │   │   ├── 📜 main.css            # 메인 페이지 스타일
-│   │   ├── 📜 login.css
-│   │   ├── 📜 signup.css
-│   │   ├── 📜 cart.css
-│   │   ├── 📜 order.css
-│   │   ├── 📜 product-details.css
-│   │   └── 📜 404.css
+│   │   ├── 📜 login.css           # 로그인 페이지 스타일
+│   │   ├── 📜 signup.css          # 회원가입 페이지 스타일
+│   │   ├── 📜 cart.css            # 장바구니 페이지 스타일
+│   │   ├── 📜 order.css           # 주문 페이지 스타일
+│   │   ├── 📜 product-details.css # 상품 상세 페이지 스타일
+│   │   └── 📜 404.css             # 404 페이지 스타일
 │   ├── 📜 index.html              # 메인 페이지
 │   ├── 📜 404.html                # 404 에러 페이지
-│   └── 📜 404.js
+│   └── 📜 404.js                  # 404 페이지 로직
 ├── 📂 server/
-│   └── 📜 db.json                 # JSON Server 데이터베이스
-├── 📜 Main.html                   # 진입점
-├── 📜 package.json
+│   └── 📜 server.js               # JSON Server 설정 및 데이터
+├── 📜 Main.html                   # 프로젝트 진입점
+├── 📜 404오류.html                # 404 에러 페이지 (루트)
+├── 📜 package.json                # 프로젝트 의존성 관리
 ├── 📜 package-lock.json
 ├── 📜 .gitignore
-├── 📜 .prettierrc
-└── 📜 README.md
+├── 📜 jsconfig.json               # JavaScript 설정
+├── 📜 PROJECT.md                  # 프로젝트 상세 문서
+└── 📜 README.md                   # 프로젝트 소개 (이 파일)
 ```
 
 #### 4.2. 개발 일정 (WBS)
@@ -279,7 +288,7 @@ fetch("../../components/layout.html")
 
 프로젝트의 상세 일정 및 작업 분배는 Notion을 통해 관리되었습니다. 주차별 목표와 개인별 할당 작업 내역을 칸반 보드 형식으로 확인하고, Discord로 실시간 작업 상황을 공유하며 진행 상황을 추적했습니다.
 
-[🌐 Notion TODOLIST 링크](https://www.notion.so/1-8b2d79c7a4804539ae592c923cc2e1fb)
+[ Notion TODOLIST 링크](https://www.notion.so/1-8b2d79c7a4804539ae592c923cc2e1fb)
 
 | 기간          | 주요 작업                                                                   |
 | :------------ | :-------------------------------------------------------------------------- |
@@ -294,14 +303,13 @@ fetch("../../components/layout.html")
 
 각 팀원은 다음과 같은 목표와 의도를 가지고 역할을 수행했습니다.
 
-| 담당 페이지 / 역할  | 담당자                                                                                                                                                               | 주요 업무                                                                                    |
-| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- | --- |
-| **메인 페이지**     | [장화연](https://github.com/Hwayeon842)                                                                                                                              | 상품 목록 렌더링, 캐러셀 구현, 탭 UI, 검색 기능, 페이지네이션 구현                           |
-| **로그인,회원가입** | [고은표](https://github.com/goeunpyo8-debug)                                                                                                                         | JWT 기반 로그인 구현, 토큰 관리, 자동 로그아웃 기능 구현                                     |     |
-| **상품상세,404**    | [장영재](https://github.com/YoungjaeJang7)                                                                                                                           | 상품 상세 정보 렌더링, 수량 조절 기능, 장바구니 담기 기능 구현                               |
-| **메인,장바구니**   | [김영종](https://github.com/ressna93)                                                                                                                                | 장바구니 상태 관리, 수량 조절, 삭제 기능, 총 금액 계산, 주문 연동                            |
-| **주문/결제**       | [김세윤](https://github.com/seyunkims)                                                                                                                               | 주문서 생성, 배송 정보 입력, 결제 수단 선택, 최종 결제 금액 계산                             |
-| **공통 아키텍처**   | [고은표](https://github.com/goeunpyo8-debug),[김세윤](https://github.com/seyunkims),[김영종](https://github.com/ressna93),[장영재](https://github.com/YoungjaeJang7) | API 통신 계층 설계, 공통 레이아웃 컴포넌트, 404 페이지, Git-flow 전략 수립 및 코드 리뷰 참여 |
+| 담당 페이지 / 역할 | 담당자 | 주요 업무 |
+| **메인 페이지** | [장화연](https://github.com/Hwayeon842) | 상품 목록 렌더링, 캐러셀 구현, 탭 UI, 검색 기능, 페이지네이션 구현 |
+| **로그인,회원가입** | [고은표](https://github.com/goeunpyo8-debug) | JWT 기반 로그인 구현, 토큰 관리, 자동 로그아웃 기능 구현 | |
+| **상품상세,404** | [장영재](https://github.com/YoungjaeJang7) | 상품 상세 정보 렌더링, 수량 조절 기능, 장바구니 담기 기능 구현 |
+| **메인,장바구니** | [김영종](https://github.com/ressna93) | 장바구니 상태 관리, 수량 조절, 삭제 기능, 총 금액 계산, 주문 연동 |
+| **주문/결제** | [김세윤](https://github.com/seyunkims) | 주문서 생성, 배송 정보 입력, 결제 수단 선택, 최종 결제 금액 계산 |
+| **공통 아키텍처** | [고은표](https://github.com/goeunpyo8-debug),[김세윤](https://github.com/seyunkims),[김영종](https://github.com/ressna93),[장영재](https://github.com/YoungjaeJang7) | API 통신 계층 설계, 공통 레이아웃 컴포넌트, 404 페이지, Git-flow 전략 수립 및 코드 리뷰 참여 |
 
 ---
 
@@ -333,7 +341,7 @@ function initTabs() {
 
 #### 6.2. 슬라이드 캐러셀 (Swiper.js)
 
-메인 페이지에서 Swiper.js 라이브러리를 활용하여 반응형 캐러셀을 구현했습니다. 루프, 페이징, 이전/다음 버튼, 자동재생, 터치 스와이프를 모두 지원합니다.
+메인 페이지에서 Swiper.js 라이브러리를 활용하여 반응형 캐러셀을 구현했습니다.
 
 ```javascript
 // main.js - Swiper 초기화
@@ -352,11 +360,52 @@ function initSwiper() {
       nextEl: ".swiper-button-next",
       prevEl: ".swiper-button-prev",
     },
+    touchRatio: 1, // 터치 스와이프 지원
   });
 }
 ```
 
-#### 6.3. 비동기 데이터 로딩 및 에러 처리
+#### 6.3. 검색 기능 (json-server)
+
+별도의 백엔드 개발 없이 json-server의 `name_like` 파라미터를 활용하여 검색 기능을 구현했습니다.
+
+```javascript
+// api.js - 검색 API
+searchProducts: async (query) => {
+  return fetchAPI(
+    `${API_BASE_URL}/products?name_like=${encodeURIComponent(query)}`
+  );
+};
+
+// main.js - 검색 기능 초기화
+function initSearch() {
+  const searchForm = document.querySelector(".search-form");
+  const searchInput = searchForm.querySelector('input[name="q"]');
+
+  searchForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const query = searchInput.value.trim();
+
+    if (!query) {
+      await loadProducts(); // 검색어 없으면 전체 상품 표시
+      return;
+    }
+
+    const data = await API.searchProducts(query);
+    allProducts = data;
+    currentPage = 1;
+    renderProducts();
+  });
+}
+```
+
+**특징:**
+
+- 실시간 검색어 처리
+- 빈 검색어 시 전체 목록 표시
+- json-server의 내장 검색 기능 활용
+
+#### 6.4. 비동기 데이터 로딩 및 에러 처리
 
 모든 API 호출은 `try/catch` 블록으로 감싸 안정적인 에러 처리를 보장합니다. 로딩 상태와 에러 상태를 사용자에게 명확하게 전달합니다.
 
@@ -374,7 +423,7 @@ async function loadProducts() {
 }
 ```
 
-#### 6.4. 반응형 디자인
+#### 6.5. 반응형 디자인
 
 모바일 퍼스트 접근 방식으로 설계되었으며, 주요 브레이크포인트(480px, 768px, 1200px)에서 레이아웃이 자연스럽게 조정됩니다.
 
@@ -400,7 +449,7 @@ async function loadProducts() {
 }
 ```
 
-#### 6.5. 접근성 (A11y)
+#### 6.6. 접근성 (A11y)
 
 - 모든 이미지에 대체 텍스트(`alt`) 제공
 - 키보드 탭 순서 보장 (`tabindex` 적절히 활용)
@@ -515,7 +564,121 @@ style: 메인 페이지 CSS 정렬
 
 ---
 
-### 10. 프로젝트 시연 영상
+### 10. 트러블슈팅 (Troubleshooting)
+
+프로젝트 개발 과정에서 발생한 주요 문제와 해결 방법을 페이지별로 정리했습니다.
+
+#### 10.1. 장바구니 페이지 (Cart)
+
+| 문제                                      | 원인                                                 | 해결 방법                                                                                                                   |
+| :---------------------------------------- | :--------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| **이미지 깨짐 현상**                      | 상품 이미지 URL 경로 오류 또는 서버 응답 지연        | - 이미지 로드 실패 시 기본 이미지(placeholder) 표시<br>- `onerror` 이벤트로 fallback 처리<br>- 상대 경로를 절대 경로로 변경 |
+| **빈 장바구니에서 "로딩중..." 무한 표시** | 빈 배열 처리 로직 누락으로 로딩 상태가 해제되지 않음 | - 장바구니 데이터가 빈 배열일 때도 로딩 상태 해제<br>- `if (cartItems.length === 0)` 조건문 추가하여 빈 장바구니 UI 표시    |
+| **페이지 로드 시 중복 렌더링**            | `DOMContentLoaded`와 함수 호출이 중복 실행됨         | - 초기화 함수를 한 곳에서만 호출하도록 수정<br>- `renderCart()` 호출 시점을 명확히 분리                                     |
+
+**주요 코드 수정 예시:**
+
+```javascript
+// 빈 장바구니 처리
+if (!cartItems || cartItems.length === 0) {
+  isLoading = false;
+  loadingSkeleton.style.display = "none";
+  showEmptyCartMessage(); // 빈 장바구니 메시지 표시
+  return;
+}
+```
+
+---
+
+#### 10.2. 로그인/회원가입 페이지
+
+| 문제                  | 원인                                                                                      | 해결 방법                                                                                                                                       |
+| :-------------------- | :---------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **포트 불일치 오류**  | API 호출 시 하드코딩된 `localhost:3000`만 사용<br>프론트엔드는 `8080` 포트에서 실행       | - `API_BASE_URL`을 환경 변수나 설정 파일로 분리<br>- CORS 설정 추가하여 다른 포트 간 통신 허용<br>- Live Server 포트와 관계없이 동작하도록 수정 |
+| **토큰 키 이름 오타** | localStorage 저장/조회 시 팀원 간 키 이름 불일치<br>(예: `accessToken` vs `access_token`) | - 공통 상수로 토큰 키 이름 정의<br>- `const TOKEN_KEY = 'access_token'`으로 통일<br>- 코드 리뷰 시 네이밍 컨벤션 확인                           |
+
+**해결된 코드:**
+
+```javascript
+// api.js - 환경에 맞는 BASE_URL 설정
+const API_BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:3000"
+    : "https://api.example.com";
+
+// 토큰 키 상수화
+const TOKEN_KEYS = {
+  ACCESS: "access_token",
+  REFRESH: "refresh_token",
+};
+
+// 사용 예시
+localStorage.setItem(TOKEN_KEYS.ACCESS, token);
+```
+
+---
+
+#### 10.3. 상품 상세 페이지 (Product Details)
+
+| 문제                                | 원인                                                                  | 해결 방법                                                                                                                       |
+| :---------------------------------- | :-------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| **공통 레이아웃 적용 시 경로 오류** | 상대 경로(`../../components/layout.html`)가 페이지 깊이에 따라 달라짐 | - 절대 경로(`/web/components/layout.html`) 사용<br>- 또는 `base` 태그로 기준 경로 설정                                          |
+| **상품 ID가 undefined 전달**        | URL 쿼리 파라미터 파싱 오류<br>`URLSearchParams` 사용법 미숙          | - URL에서 `id` 파라미터 정확히 추출<br>- `const id = new URLSearchParams(window.location.search).get('id')`<br>- null 체크 추가 |
+| **서버 포트 불일치 (3000 vs 8080)** | 개발 서버와 API 서버 포트 혼용                                        | - 위 로그인 페이지와 동일하게 `API_BASE_URL` 통일<br>- JSON Server는 `3000`, Live Server는 `8080` 사용을 명확히 구분            |
+
+**수정 예시:**
+
+```javascript
+// 상품 ID 안전하게 가져오기
+const productId = new URLSearchParams(window.location.search).get("id");
+
+if (!productId) {
+  alert("상품 정보를 찾을 수 없습니다.");
+  window.location.href = "/web/index.html";
+  return;
+}
+
+// 상품 정보 로드
+const product = await API.getProduct(productId);
+```
+
+---
+
+#### 10.4. 주문/결제 페이지 (Order/Payment)
+
+| 문제                           | 원인                                                            | 해결 방법                                                                                                                    |
+| :----------------------------- | :-------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| **주문 데이터 전달 실패**      | localStorage 저장/조회 시점 오류<br>데이터 직렬화/역직렬화 오류 | - `JSON.stringify()`로 저장, `JSON.parse()`로 조회<br>- 데이터 저장 직후 바로 조회하여 검증<br>- try-catch로 파싱 에러 처리  |
+| **결제 금액 계산 오류**        | 배송비 계산 로직 누락<br>수량 × 단가 계산 시 타입 변환 오류     | - `Number()` 또는 `parseInt()`로 명시적 타입 변환<br>- 배송비 조건부 로직 명확화<br>- 총 금액 = 상품 금액 + 배송비 공식 확인 |
+| **입력 필드 유효성 검사 오류** | 정규식 패턴 오류<br>필수 필드 체크 누락                         | - 각 필드별 정규식 테스트 강화<br>- 모든 필수 필드 입력 확인 후 결제 버튼 활성화<br>- 실시간 유효성 검사 피드백 제공         |
+
+**개선된 코드:**
+
+```javascript
+// localStorage 안전한 사용
+function saveOrderData(data) {
+  try {
+    localStorage.setItem("orderData", JSON.stringify(data));
+  } catch (error) {
+    console.error("주문 데이터 저장 실패:", error);
+    alert("주문 정보를 저장할 수 없습니다.");
+  }
+}
+
+// 금액 계산 (명시적 타입 변환)
+function calculateTotal(items) {
+  const productTotal = items.reduce((sum, item) => {
+    return sum + Number(item.price) * Number(item.quantity);
+  }, 0);
+
+  const shippingFee = productTotal >= 50000 ? 0 : 3000;
+  return productTotal + shippingFee;
+}
+```
+
+---
+
+### 11. 프로젝트
 
 - **캐러셀 작동**
   메인 페이지의 Swiper 캐러셀이 자동으로 슬라이드되며, 사용자는 좌/우 버튼이나 터치 스와이프로 제어할 수 있습니다.
@@ -543,24 +706,36 @@ style: 메인 페이지 CSS 정렬
 - **실전 협업 경험**: Git-flow 전략, Pull Request, 코드 리뷰를 통해 실무와 유사한 협업 프로세스를 경험했습니다.
 - **접근성과 사용자 경험**: 키보드 접근성, 반응형 디자인, 에러 처리 등 사용자 중심의 개발을 실천했습니다.
 
-#### 11.2. 개선점
+#### 11.2. 개선점 및 배운 점
 
-> - 팀원들 과 함께하는 환경에서 서로 다독여주고 가르쳐주고 배우는 문화를 통해 팀원들 의 기술 능력 책임감 의 성장을 이끌어냈습니다.
+**긍정적 성과:**
 
-> - 프레임워크 없이도 모듈화 설계를 통해 재사용성과 유지보수성이 높은 코드를 작성하는 경험을 쌓았습니다.
+- 팀원들과 서로 가르치고 배우는 문화를 통해 기술적 성장을 이끌어냈습니다.
+- 프레임워크 없이도 모듈화 설계로 재사용성 높은 코드를 작성하는 경험을 쌓았습니다.
 
-- **업무 분담 방식의 개선**: 프로젝트 초반에 각자 맡은 페이지를 개발하는 방식으로 업무를 나눴습니다. 그런데 모달창, 유효성 검사 같은 공통 기능들이 여러 페이지에서 반복적으로 필요해지면서 예상치 못한 문제가 생겼습니다. 같은 기능을 각자 다르게 구현하다 보니 코드 스타일이 달라지고, 한 곳에서 수정사항이 생기면 다른 페이지에도 반영해야 해서 소통 해야하는 시간 많이 늘었습니다. 다음 프로젝트에서는 먼저 공통으로 사용할 기능들을 함께 설계하고 구현한 뒤, 각자 페이지 작업을 시작하는 방식이 더 효율적일 것 같습니다. 이렇게 하면 코드의 일관성도 유지하고, 불필요한 중복 작업도 줄일 수 있을 것입니다.
--
-- **상태 관리**: 복잡한 장바구니 상태를 관리하며 전역 상태 관리의 필요성을 느꼈습니다. 향후 프로젝트에서는 경량 상태 관리 패턴을 도입하는 것을 고려하겠습니다.
--
-- **테스트 코드**: 시간 제약으로 테스트 코드를 작성하지 못했지만, 버그를 사전에 방지하기 위해 단위 테스트와 통합 테스트가 필요함을 느꼈습니다.
+**개선이 필요한 부분:**
 
-#### 11.3. 배운 점
+**1. 업무 분담 방식**
 
-- **비동기 프로그래밍**: `async/await`, `Promise`, `fetch API`를 활용하며 비동기 처리의 흐름을 깊이 이해했습니다.
-- **DOM 조작과 이벤트 처리**: 프레임워크의 도움 없이 DOM을 직접 조작하며, 브라우저 렌더링 최적화의 중요성을 깨달았습니다.
-- **Git 협업**: 브랜치 전략, 충돌 해결, 코드 리뷰 프로세스를 체득하며 팀 협업 역량을 키웠습니다.
-- **문제 해결 능력**: 프레임워크가 제공하는 추상화 없이 문제를 해결하며, 근본적인 원리를 파악하는 능력이 향상되었습니다.
+- 문제: 페이지 단위로 업무를 나누다 보니 모달, 유효성 검사 등 공통 기능이 중복 개발되었습니다.
+- 영향: 코드 스타일 불일치, 수정 시 여러 파일 동기화 필요
+- 개선 방향: 다음 프로젝트에서는 공통 기능을 먼저 함께 설계하고 구현한 뒤 페이지별 작업 시작
+
+**2. 상태 관리**
+
+- 복잡한 장바구니 상태 관리를 통해 전역 상태 관리의 필요성을 체감했습니다.
+- 향후 경량 상태 관리 패턴(Context API 패턴) 도입을 고려하겠습니다.
+
+**3. 테스트 코드**
+
+- 시간 제약으로 테스트 코드를 작성하지 못했지만, 버그 사전 방지를 위해 단위 테스트와 통합 테스트의 중요성을 느꼈습니다.
+
+**핵심 학습 내용:**
+
+- **비동기 프로그래밍**: `async/await`, `Promise`, `fetch API` 활용
+- **DOM 조작**: 프레임워크 없이 직접 DOM 조작하며 브라우저 렌더링 최적화 이해
+- **Git 협업**: 브랜치 전략, 충돌 해결, 코드 리뷰 프로세스 체득
+- **문제 해결**: 프레임워크 추상화 없이 근본 원리를 파악하는 능력 향상
 
 ---
 
@@ -576,8 +751,7 @@ style: 메인 페이지 CSS 정렬
 
 #### 저장소
 
-[자두페이지 새싹코딩팀](https://github.com/zadupage/team1-JADUPAG)
-<img src='https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/github.svg' alt='github' height='40' style="display:inline-block; vertical-align:middle;margin-right:10px;">
+🔗 **GitHub Repository**: [자두페이지 새싹코딩팀](https://github.com/zadupage/team1-JADUPAGE)
 
 ---
 
@@ -589,4 +763,10 @@ style: 메인 페이지 CSS 정렬
 
 ## 감사합니다!
 
-자두마켓 프로젝트를 통해 Vanilla JavaScript의 힘과 팀 협업의 중요성을 배웠습니다. 앞으로도 사용자 중심의 웹 애플리케이션을 만들기 위해 노력하겠습니다.
+**자두페이지(ZADU PAGE)** 프로젝트를 통해 Vanilla JavaScript의 기본 원리와 팀 협업의 중요성을 깊이 있게 배웠습니다.
+
+프레임워크 없이 직접 구현하며 얻은 경험을 바탕으로, 앞으로도 사용자 중심의 웹 애플리케이션을 만들기 위해 노력하겠습니다.
+
+---
+
+**Made with by 새싹코딩팀**
