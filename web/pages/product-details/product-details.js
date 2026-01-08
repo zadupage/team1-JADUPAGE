@@ -1,3 +1,12 @@
+// 환경 감지
+const isGitHubPages = window.location.hostname.includes("github.io");
+const BASE_PATH = isGitHubPages ? "/team1-JADUPAGE/web" : "";
+
+// 데이터 경로
+function getDataPath() {
+  return isGitHubPages ? `${BASE_PATH}/db.json` : "../../db.json";
+}
+
 // URL에서 상품 id 가져오기 (?id=1,2,3,4,5)
 const params = new URLSearchParams(window.location.search);
 
@@ -12,7 +21,7 @@ if (!productId) {
 let quantity = 1;
 let price = 0;
 
-// DOM (TODO: 확인하기01.06)
+// DOM
 const minusBtn = document.querySelector('.quantify button:first-child');
 const plusBtn = document.querySelector('.quantify button:last-child');
 const quantityInput = document.querySelector('.quantify input');
@@ -32,15 +41,6 @@ const modalNo = document.getElementById('modalNo');
 const modalYes = document.getElementById('modalYes');
 const overlay = document.querySelector('.modal-overlay');
 const closeBtn = document.querySelector('.modal-close');
-
-// 로그인 체크 함수
-function getAccessToken() {
-  return localStorage.getItem("access_token");
-}
-
-function isLoggedIn() {
-  return !!getAccessToken();
-}
 
 // 수량/가격 계산
 function updateTotal() {
@@ -72,16 +72,19 @@ function renderProductDetails(product) {
   updateTotal();
 }
 
-// 상품 불러오기 (async/await)
+// 상품 불러오기 (db.json에서)
 async function fetchProduct(productId) {
   try {
-    const response = await fetch(`http://localhost:3000/products/${productId}`);
+    const response = await fetch(getDataPath());
     console.log('응답 status:', response.status);
     if (!response.ok) throw new Error('상품 조회 실패');
 
-    const product = await response.json();
-    console.log('상품 데이터:', product);
+    const data = await response.json();
+    const product = data.products.find(p => p.id === productId);
 
+    if (!product) throw new Error('상품을 찾을 수 없습니다.');
+
+    console.log('상품 데이터:', product);
     renderProductDetails(product);
   } catch (err) {
     console.error(err);
@@ -100,53 +103,49 @@ function openCartConfirmModal() {
   modal.classList.remove('hidden');
 }
 
-// 장바구니 추가 API (async/await)
+// 장바구니 추가 - 정적 페이지에서는 localStorage에만 저장
 async function addToCart(productId, quantity) {
-  const token = getAccessToken();
-
-  if (!token) {
-    console.error("토큰이 없습니다!");
-    throw new Error("로그인이 필요합니다.");
-  }
-
   try {
-    const res = await fetch(`http://localhost:3000/cart`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
+    // 로컬스토리지에 장바구니 저장
+    const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+
+    // 기존 상품이 있는지 확인
+    const existingIndex = cartItems.findIndex(item => item.product_id === productId);
+
+    if (existingIndex > -1) {
+      // 이미 있으면 수량만 증가
+      cartItems[existingIndex].quantity += quantity;
+    } else {
+      // 없으면 새로 추가
+      cartItems.push({
+        id: Date.now(), // 임시 ID
         product_id: productId,
-        quantity
-      })
-    });
-
-    console.log("fetch 요청 status:", res.status); // 디버깅용
-
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      console.error("서버 응답 오류:", errData);
-      throw new Error('장바구니 추가 실패');
+        quantity: quantity
+      });
     }
 
-    return await res.json();
+    localStorage.setItem('cart', JSON.stringify(cartItems));
+    console.log("장바구니에 추가됨:", cartItems);
+
+    return { success: true };
   } catch (err) {
     console.error("addToCart 에러:", err);
     throw err;
   }
 }
 
+// 로그인 체크 - 정적 사이트에서는 제한적으로만 사용
+function isLoggedIn() {
+  return !!localStorage.getItem("access_token");
+}
 
 // 로그인 체크 공통
 function requireLogin(callback) {
   return function (e) {
     e.preventDefault();
-    if (!isLoggedIn()) {
-      openModal();
-      return;
-    }
-    callback();
+    // 정적 사이트에서는 로그인 기능 비활성화
+    alert('이 기능은 로컬 서버에서만 사용 가능합니다.');
+    // callback(); // 로컬 서버에서만 활성화
   };
 }
 
@@ -188,30 +187,23 @@ document.addEventListener('DOMContentLoaded', () => {
   if (buyBtn) {
     buyBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      if (!isLoggedIn()) {
-        window.location.href = '../login/login.html';
-        return;
-      }
-      window.location.href = `../order/order.html?id=${productId}&quantity=${quantity}`;
+      alert('구매 기능은 로컬 서버에서만 사용 가능합니다.');
     });
   }
 
-  // 장바구니 버튼 (async/await)
-if (cartBtn) {
-  cartBtn.addEventListener(
-    'click',
-    requireLogin(async () => {
+  // 장바구니 버튼
+  if (cartBtn) {
+    cartBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
       try {
-        const data = await addToCart(productId, quantity);
-        console.log("장바구니 추가 성공:", data);
+        await addToCart(productId, quantity);
+        console.log("장바구니 추가 성공");
         openCartConfirmModal();
       } catch (e) {
         alert('장바구니 추가 실패');
-    }
-  })
-);
-
-}
+      }
+    });
+  }
 
   // 모달 버튼
   if (modalNo) modalNo.addEventListener('click', closeModal);
@@ -223,4 +215,3 @@ if (cartBtn) {
     });
   }
 });
-

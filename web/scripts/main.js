@@ -1,5 +1,3 @@
-import { API } from "./api.js";
-
 // 전역 변수
 let allProducts = [];
 let currentPage = 1;
@@ -9,6 +7,11 @@ let currentCategory = "all";
 // 환경 감지
 const isGitHubPages = window.location.hostname.includes("github.io");
 const BASE_PATH = isGitHubPages ? "/team1-JADUPAGE/web" : "";
+
+// 데이터 경로
+function getDataPath() {
+  return isGitHubPages ? `${BASE_PATH}/db.json` : "./db.json";
+}
 
 function getProductDetailPath(productId) {
   if (isGitHubPages) {
@@ -119,9 +122,12 @@ async function loadProducts() {
     errorMessage.style.display = "none";
     productGrid.style.display = "none";
 
-    // API 호출
-    const data = await API.getProducts();
-    allProducts = data.results || data; // Handle both paginated and array responses
+    // db.json에서 상품 데이터 가져오기
+    const response = await fetch(getDataPath());
+    if (!response.ok) throw new Error("데이터 로드 실패");
+
+    const data = await response.json();
+    allProducts = data.products || [];
 
     // 상품 렌더링
     renderProducts();
@@ -139,8 +145,6 @@ async function loadProducts() {
     // 재시도 버튼 이벤트
     const retryButton = document.querySelector(".retry-button");
     retryButton.onclick = loadProducts;
-  } finally {
-    // finally 블록에서 추가 작업 가능
   }
 }
 
@@ -266,9 +270,18 @@ function initSearch() {
       loadingSkeleton.style.display = "grid";
       productGrid.style.display = "none";
 
-      // 검색 API 호출
-      const data = await API.searchProducts(query);
-      allProducts = data.results || data; // Handle both paginated and array responses
+      // db.json에서 검색
+      const response = await fetch(getDataPath());
+      if (!response.ok) throw new Error("데이터 로드 실패");
+
+      const data = await response.json();
+      const products = data.products || [];
+
+      // 클라이언트 측 검색 (이름 포함)
+      allProducts = products.filter(product =>
+        product.name.toLowerCase().includes(query.toLowerCase())
+      );
+
       currentPage = 1;
       renderProducts();
 

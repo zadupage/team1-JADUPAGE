@@ -1,4 +1,11 @@
+// 로그인 기능은 로컬 서버 전용
 const API_BASE = "http://localhost:3000";
+
+// GitHub Pages에서 접근 시 경고
+if (window.location.hostname.includes("github.io")) {
+  alert("로그인 기능은 로컬 서버에서만 사용 가능합니다.\n\n로컬에서 'npm start'로 서버를 실행한 후 http://localhost:5500 에서 접속하세요.");
+}
+
 //탭 전환
 const tabs = document.querySelectorAll(".tab");
 tabs.forEach((btn) => {
