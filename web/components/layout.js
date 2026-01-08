@@ -65,7 +65,7 @@ function requireLogin(callback) {
 }
 
 // CSS 로드
-loadCSS("../../components/layout.css");
+loadCSS("./layout.css");
 
 function loadCSS(url) {
   const link = document.createElement("link");
