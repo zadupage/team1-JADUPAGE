@@ -6,6 +6,17 @@ let currentPage = 1;
 const ITEMS_PER_PAGE = 8;
 let currentCategory = 'all';
 
+// 환경 감지
+const isGitHubPages = window.location.hostname.includes('github.io');
+const BASE_PATH = isGitHubPages ? '/team1-JADUPAGE/web' : '';
+
+function getProductDetailPath(productId) {
+  if (isGitHubPages) {
+    return `${BASE_PATH}/pages/product-details/product-details.html?id=${productId}`;
+  }
+  return `./pages/product-details/product-details.html?id=${productId}`;
+}
+
 // DOM 로드 후 초기화
 document.addEventListener('DOMContentLoaded', async () => {
   initSwiper();
@@ -150,7 +161,7 @@ function renderProducts() {
     .map(
       (product) => `
     <article class="product-card" data-product-id="${product.id}">
-      <a href="./pages/product-details/product-details.html?id=${product.id}" class="product-link">
+      <a href="${getProductDetailPath(product.id)}" class="product-link">
         <div class="product-image">
           <img src="${product.image}" alt="${product.name}" loading="lazy" />
         </div>
