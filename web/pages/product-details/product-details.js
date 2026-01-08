@@ -51,7 +51,11 @@ function renderProductDetails(product) {
   price = product.price;
 
   const imgEl = document.querySelector('.product-image img');
-  if (imgEl) imgEl.src = `/assets/images/product${product.id}.png`;
+  // API에서 받아온 이미지 경로를 상대 경로로 변환
+  if (imgEl && product.image) {
+    // "./assets/images/product1.png" -> "../../assets/images/product1.png"
+    imgEl.src = product.image.replace('./', '../../');
+  }
 
   const nameEl = document.getElementById('productName');
   if (nameEl) nameEl.textContent = product.name;
