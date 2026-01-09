@@ -208,7 +208,21 @@ function showErrorMessage(message) {
  */
 async function updateCartItemQuantity(cartItemId, newQuantity) {
   try {
-    // Authorization 헤더 추가 (PROJECT.md 기준)
+    // GitHub Pages인 경우 sessionStorage에서 수정
+    const isGitHubPages = window.location.hostname.includes("github.io");
+    if (isGitHubPages) {
+      const sessionCart = JSON.parse(sessionStorage.getItem("cartData") || "[]");
+      const item = sessionCart.find(item => item.product_id === cartItemId);
+      if (item) {
+        item.quantity = newQuantity;
+        sessionStorage.setItem("cartData", JSON.stringify(sessionCart));
+        console.log("✓ 수량 업데이트 성공 (sessionStorage):", newQuantity);
+        return { quantity: newQuantity };
+      }
+      throw new Error("상품을 찾을 수 없습니다.");
+    }
+
+    // API 호출 (로컬/Vercel)
     const token = localStorage.getItem("access_token");
     const response = await fetch(`${API_BASE_URL}/cart/${cartItemId}/`, {
       method: "PUT",
