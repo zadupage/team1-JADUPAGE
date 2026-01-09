@@ -1,5 +1,5 @@
-@import '../../styles/variables.css';
-@import '../../styles/fonts.css';
+@import '../../components/styles/variables.css';
+@import '../../components/styles/fonts.css';
 
 html, body {
   height: 100%;
