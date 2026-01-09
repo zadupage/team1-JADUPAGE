@@ -642,6 +642,16 @@ function closeModal(modal) {
 // 장바구니 아이템 삭제 API 호출
 async function deleteCartItem(cartItemId) {
   try {
+    // GitHub Pages인 경우 sessionStorage에서 삭제
+    const isGitHubPages = window.location.hostname.includes("github.io");
+    if (isGitHubPages) {
+      const sessionCart = JSON.parse(sessionStorage.getItem("cartData") || "[]");
+      const updatedCart = sessionCart.filter(item => item.product_id !== cartItemId);
+      sessionStorage.setItem("cartData", JSON.stringify(updatedCart));
+      console.log("✓ 삭제 성공 (sessionStorage)");
+      return true;
+    }
+
     // Authorization 헤더 추가 (PROJECT.md 기준)
     const token = localStorage.getItem("access_token");
     const response = await fetch(`${API_BASE_URL}/cart/${cartItemId}/`, {
