@@ -27,7 +27,7 @@ function logout(reason = "로그인이 만료되었습니다. 다시 로그인�
   localStorage.removeItem("user");
 
   alert(reason);
-  window.location.href = "../web/pages/login/login.html";
+  window.location.href = "../pages/login/login.html";
 }
 
 let logoutTimerId = null;
