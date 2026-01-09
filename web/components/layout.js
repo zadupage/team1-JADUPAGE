@@ -94,8 +94,16 @@ function requireLogin(callback) {
   };
 }
 
+// 현재 페이지의 web 폴더 기준 경로 계산
+function getBasePath() {
+  const path = window.location.pathname;
+  // web/index.html 또는 web/pages/cart/cart.html 등에서 web 폴더까지의 상대 경로 계산
+  const depth = path.split('/').filter(p => p && p !== 'web').length - 1;
+  return depth === 0 ? '.' : '../'.repeat(depth);
+}
+
 // CSS 로드
-loadCSS(getResourcePath("layout.css"));
+loadCSS("./layout.css");
 
 function loadCSS(url) {
   const link = document.createElement("link");
@@ -181,17 +189,16 @@ function movePageContentToMain() {
   pageContents.forEach((el) => main.appendChild(el));
 }
 
+// 현재 페이지의 web 폴더 기준 경로 계산
+function getBasePath() {
+  const path = window.location.pathname;
+  // web/index.html 또는 web/pages/cart/cart.html 등에서 web 폴더까지의 상대 경로 계산
+  const depth = path.split('/').filter(p => p && p !== 'web').length - 1;
+  return depth === 0 ? '.' : '../'.repeat(depth);
+}
+
 // header 이벤트 바인딩
 function bindHeaderEvents() {
-  // 로고 클릭 이벤트
-  const logoLink = document.querySelector("header .logo a");
-  if (logoLink) {
-    logoLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      window.location.href = getPagePath("index.html");
-    });
-  }
-
   // 장바구니 버튼
   const cartBtn = document.querySelector(
     'header .icon-item[aria-label="장바구니"]'
