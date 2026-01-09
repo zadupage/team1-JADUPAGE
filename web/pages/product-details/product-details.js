@@ -51,26 +51,37 @@ function renderProductDetails(product) {
   price = product.price;
 
   const imgEl = document.querySelector('.product-image img');
-  // 이미지 경로 설정
+  // 이미지 경로 설정 (여러 경로 시도 with fallback)
   if (imgEl && product.image) {
     const isGitHubPages = window.location.hostname.includes("github.io");
 
-    // ./assets/images/product1.png → web/assets/images/product1.png
-    let imagePath = product.image.replace('./', 'web/');
+    // 이미지 경로에서 ./assets/images/product1.png 같은 형태 처리
+    const imagePath = product.image.replace('./', '');  // assets/images/product1.png
 
-    if (isGitHubPages) {
-      // GitHub Pages: /team1-JADUPAGE/web/assets/images/product1.png
-      imgEl.src = `/team1-JADUPAGE/${imagePath}`;
-    } else {
-      // Vercel/로컬: ../../web/assets/images/product1.png (상대경로)
-      imgEl.src = `../../${imagePath}`;
-    }
+    // 가능한 모든 경로 목록
+    const imagePaths = isGitHubPages ? [
+      `/team1-JADUPAGE/web/${imagePath}`,           // /team1-JADUPAGE/web/assets/images/product1.png
+      `/team1-JADUPAGE/${imagePath}`,               // /team1-JADUPAGE/assets/images/product1.png
+    ] : [
+      `../../${imagePath}`,                         // ../../assets/images/product1.png (상대경로)
+      `/web/${imagePath}`,                          // /web/assets/images/product1.png (절대경로)
+    ];
 
-    console.log('이미지 경로:', imgEl.src);
+    let currentIndex = 0;
 
-    // 로드 실패 시 에러 로그
+    // 첫 번째 경로 시도
+    imgEl.src = imagePaths[currentIndex];
+
+    // 로드 실패 시 다음 경로 시도
     imgEl.onerror = () => {
-      console.error('이미지 로드 실패:', imgEl.src);
+      currentIndex++;
+      if (currentIndex < imagePaths.length) {
+        console.log(`이미지 로드 실패, 다른 경로 시도 (${currentIndex}): ${imagePaths[currentIndex]}`);
+        imgEl.src = imagePaths[currentIndex];
+      } else {
+        console.error(`모든 이미지 경로 시도 실패:`, imagePaths);
+        imgEl.onerror = null; // 무한 루프 방지
+      }
     };
   }
 
