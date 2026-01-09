@@ -56,9 +56,9 @@ function renderProductDetails(product) {
     const isGitHubPages = window.location.hostname.includes("github.io");
 
     if (isGitHubPages) {
-      // GitHub Pages: 루트 assets 폴더 사용
-      // "./assets/images/product1.png" -> "/team1-JADUPAGE/assets/images/product1.png"
-      imgEl.src = product.image.replace('./', '/team1-JADUPAGE/');
+      // GitHub Pages: 절대 경로 사용
+      // "./assets/images/product1.png" -> "/team1-JADUPAGE/web/assets/images/product1.png"
+      imgEl.src = product.image.replace('./', '/team1-JADUPAGE/web/');
     } else {
       // Vercel/로컬: 상대 경로 사용
       // "./assets/images/product1.png" -> "../../assets/images/product1.png"
